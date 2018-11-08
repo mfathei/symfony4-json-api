@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Album;
 use App\Form\AlbumType;
+use App\Serializer\FormErrorSerializer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,10 +16,15 @@ class AlbumController extends AbstractController
 {
     /** @var EntityManagerInterface $entityManager */
     private $entityManager;
+    /**
+     * @var FormErrorSerializer
+     */
+    private $errorSerializer;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, FormErrorSerializer $errorSerializer)
     {
         $this->entityManager = $entityManager;
+        $this->errorSerializer = $errorSerializer;
     }
 
     /**
@@ -37,7 +43,8 @@ class AlbumController extends AbstractController
 
         if (false === $form->isValid()) {
             return new JsonResponse([
-                'status' => 'error'
+                'status' => 'error',
+                'errors'  => $this->errorSerializer->convertFormToArray($form)
             ], Response::HTTP_BAD_REQUEST);
         }
 
