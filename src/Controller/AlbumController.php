@@ -38,7 +38,7 @@ class AlbumController extends AbstractController
         if (false === $form->isValid()) {
             return new JsonResponse([
                 'status' => 'error'
-            ]);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $this->entityManager->persist($form->getData());
