@@ -15,7 +15,7 @@ class AlbumType extends AbstractType
     {
         $builder
             ->add('title')
-            ->add('releaseDate', DateTimeType::class,
+            ->add('release_date', DateTimeType::class,
                 [
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd\'T\'HH:mm:ssZZZZZ',
