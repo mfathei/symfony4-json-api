@@ -4,12 +4,14 @@ namespace App\Controller;
 
 use App\Entity\Album;
 use App\Form\AlbumType;
+use App\Repository\AlbumRepository;
 use App\Serializer\FormErrorSerializer;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class AlbumController extends AbstractController
@@ -20,11 +22,18 @@ class AlbumController extends AbstractController
      * @var FormErrorSerializer
      */
     private $errorSerializer;
+    /**
+     * @var AlbumRepository
+     */
+    private $albumRepository;
 
-    public function __construct(EntityManagerInterface $entityManager, FormErrorSerializer $errorSerializer)
+    public function __construct(EntityManagerInterface $entityManager,
+                                FormErrorSerializer $errorSerializer,
+                                AlbumRepository $albumRepository)
     {
         $this->entityManager = $entityManager;
         $this->errorSerializer = $errorSerializer;
+        $this->albumRepository = $albumRepository;
     }
 
     /**
@@ -44,7 +53,7 @@ class AlbumController extends AbstractController
         if (false === $form->isValid()) {
             return new JsonResponse([
                 'status' => 'error',
-                'errors'  => $this->errorSerializer->convertFormToArray($form)
+                'errors' => $this->errorSerializer->convertFormToArray($form)
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -55,5 +64,24 @@ class AlbumController extends AbstractController
             'status' => 'ok'
         ],
             Response::HTTP_CREATED);
+    }
+
+    /**
+     * @Route("/album/{id}", name="get_album", methods={"GET"}, requirements={"id": "\d+"})
+     */
+    public function get($id)
+    {
+        return new JsonResponse($this->findAlbumById($id), Response::HTTP_OK);
+    }
+
+    private function findAlbumById($id)
+    {
+        $album = $this->albumRepository->find($id);
+
+        if (null === $album) {
+            throw new NotFoundHttpException();
+        }
+
+        return $album;
     }
 }
