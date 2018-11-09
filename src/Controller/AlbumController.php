@@ -74,6 +74,14 @@ class AlbumController extends AbstractController
         return new JsonResponse($this->findAlbumById($id), Response::HTTP_OK);
     }
 
+    /**
+     * @Route("/album", name="cget_album", methods={"GET"})
+     */
+    public function cget()
+    {
+        return new JsonResponse($this->albumRepository->findAll(), Response::HTTP_OK);
+    }
+
     private function findAlbumById($id)
     {
         $album = $this->albumRepository->find($id);
