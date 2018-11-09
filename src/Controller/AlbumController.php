@@ -10,7 +10,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -54,7 +53,7 @@ class AlbumController extends AbstractController
             return new JsonResponse([
                 'status' => 'error',
                 'errors' => $this->errorSerializer->convertFormToArray($form)
-            ], Response::HTTP_BAD_REQUEST);
+            ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $this->entityManager->persist($form->getData());
@@ -63,7 +62,7 @@ class AlbumController extends AbstractController
         return new JsonResponse([
             'status' => 'ok'
         ],
-            Response::HTTP_CREATED);
+            JsonResponse::HTTP_CREATED);
     }
 
     /**
@@ -71,7 +70,7 @@ class AlbumController extends AbstractController
      */
     public function get($id)
     {
-        return new JsonResponse($this->findAlbumById($id), Response::HTTP_OK);
+        return new JsonResponse($this->findAlbumById($id), JsonResponse::HTTP_OK);
     }
 
     /**
@@ -79,7 +78,36 @@ class AlbumController extends AbstractController
      */
     public function cget()
     {
-        return new JsonResponse($this->albumRepository->findAll(), Response::HTTP_OK);
+        return new JsonResponse($this->albumRepository->findAll(), JsonResponse::HTTP_OK);
+    }
+
+    /**
+     * @Route("/album/{id}", name="put_album", requirements={"id": "\d+"}, methods={"PUT"})
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
+    public function put(Request $request, $id)
+    {
+
+        $data = json_decode($request->getContent(), true);
+
+        $existingAlbum = $this->findAlbumById($id);
+
+        $form = $this->createForm(AlbumType::class, $existingAlbum);
+
+        $form->submit($data);
+
+        if (false === $form->isValid()) {
+            return new JsonResponse([
+                'status' => 'error',
+                'errors' => $this->errorSerializer->convertFormToArray($form)
+            ], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     private function findAlbumById($id)

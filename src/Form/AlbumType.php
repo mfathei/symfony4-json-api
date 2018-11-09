@@ -28,7 +28,8 @@ class AlbumType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Album::class,
-            'csrf_protection' => false
+            'csrf_protection' => false,
+            'allow_extra_fields' => true,/** this will ignore id field in PUT method as it is wrong to send it*/
         ]);
     }
 }
