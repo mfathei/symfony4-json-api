@@ -139,6 +139,20 @@ class AlbumController extends AbstractController
         return new JsonResponse(['status' => 'ok'], JsonResponse::HTTP_NO_CONTENT);
     }
 
+    /**
+     * @Route("/album/{id}", name="delete_album", methods={"DELETE"}, requirements={"id": "\d+"})
+     * @param $id
+     */
+    public function delete($id)
+    {
+        $existingAlbum = $this->findAlbumById($id);
+
+        $this->entityManager->remove($existingAlbum);
+        $this->entityManager->flush();
+
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
     private function findAlbumById($id)
     {
         $album = $this->albumRepository->find($id);
