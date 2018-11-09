@@ -110,6 +110,35 @@ class AlbumController extends AbstractController
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
+    /**
+     * @Route("/album/{id}", name="patch_album", requirements={"id": "\d+"}, methods={"PATCH"})
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
+    public function patch(Request $request, $id)
+    {
+
+        $data = json_decode($request->getContent(), true);
+
+        $existingAlbum = $this->findAlbumById($id);
+
+        $form = $this->createForm(AlbumType::class, $existingAlbum);
+
+        $form->submit($data, false);//
+
+        if (false === $form->isValid()) {
+            return new JsonResponse([
+                'status' => 'error',
+                'errors' => $this->errorSerializer->convertFormToArray($form)
+            ], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse(['status' => 'ok'], JsonResponse::HTTP_NO_CONTENT);
+    }
+
     private function findAlbumById($id)
     {
         $album = $this->albumRepository->find($id);
